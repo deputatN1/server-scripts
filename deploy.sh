@@ -17,7 +17,10 @@ usage() {
 }
 
 ensure_root() {
-  [ "$EUID" -ne 0 ] && echo "Run as root" && exit 1
+  if [ "$EUID" -ne 0 ]; then
+ echo "Потребує root(sudo) "
+ exit 1
+ fi
 }
 
 add_store() {
