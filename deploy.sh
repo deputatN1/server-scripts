@@ -41,10 +41,30 @@ ensure_mariadb() {
 
     echo "✅ MariaDB готова"
 }
+ensure_nginx() {
+    if ! command -v nginx >/dev/null 2>&1; then
+        echo "⚠️  nginx не знайдено"
+        echo "➡️  Встановлюю nginx..."
+
+        apt update
+        apt install -y nginx
+    fi
+
+    if ! systemctl is-active --quiet nginx; then
+        echo "⚠️  nginx не запущений"
+        echo "➡️  Запускаю nginx..."
+
+        systemctl start nginx
+        systemctl enable nginx
+    fi
+
+    echo "✅ nginx готовий"
+}
 
   # Виклик функцій перевірки готовності системи до створення бази даних
 ensure_root
 ensure_mariadb
+ensure_nginx
 
 add_store() {
   read -p "Domain: " DOMAIN
