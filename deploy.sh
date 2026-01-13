@@ -22,18 +22,6 @@ ensure_root() {
  exit 1
  fi
 }
-
-add_store() {
-  read -p "Domain: " DOMAIN
-  read -p "Mode (demo/prod): " MODE
-
-  DB_NAME="oc_${DOMAIN//./_}"
-  DB_USER="$DB_NAME"
-  DB_PASS=$(openssl rand -base64 16)
-  ROOT="$WWW_DIR/$DOMAIN"
-
-  mkdir -p "$ROOT" "$BASE_DIR/stores"
-
 ensure_mariadb() {
     if ! command -v mysql >/dev/null 2>&1; then
         echo "⚠️  mysql client не знайдено"
@@ -53,6 +41,25 @@ ensure_mariadb() {
 
     echo "✅ MariaDB готова"
 }
+
+  # Виклик функцій перевірки готовності системи до створення бази даних
+ensure_root
+ensure_mariadb
+
+add_store() {
+  read -p "Domain: " DOMAIN
+  read -p "Mode (demo/prod): " MODE
+  #заміняємо дефіси та крапки в іменах баз даних
+  SAFE_NAME=$(echo "$DOMAIN" | tr '.-' '_' )
+  DB_NAME="oc_${SAFE_NAME}"
+  DB_USER="oc_${SAFE_NAME}"
+
+  # DB_NAME="oc_${DOMAIN//./_}"
+  # DB_USER="$DB_NAME"
+  DB_PASS=$(openssl rand -base64 16)
+  ROOT="$WWW_DIR/$DOMAIN"
+
+  mkdir -p "$ROOT" "$BASE_DIR/stores"
 
   # DB
   mysql <<EOF
