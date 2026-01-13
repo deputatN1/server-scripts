@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 
 BASE_DIR="/opt/opencart"
@@ -18,7 +18,7 @@ usage() {
 
 ensure_root() {
   if [ "$EUID" -ne 0 ]; then
- echo "Потребує root(sudo) "
+ echo "❌ Запустіть скрипт від root: sudo ./deploy.sh"
  exit 1
  fi
 }
@@ -33,6 +33,26 @@ add_store() {
   ROOT="$WWW_DIR/$DOMAIN"
 
   mkdir -p "$ROOT" "$BASE_DIR/stores"
+
+ensure_mariadb() {
+    if ! command -v mysql >/dev/null 2>&1; then
+        echo "⚠️  mysql client не знайдено"
+        echo "➡️  Встановлюю MariaDB..."
+
+        apt update
+        apt install -y mariadb-server mariadb-client
+    fi
+
+    if ! systemctl is-active --quiet mariadb; then
+        echo "⚠️  MariaDB не запущена"
+        echo "➡️  Запускаю mariadb..."
+
+        systemctl start mariadb
+        systemctl enable mariadb
+    fi
+
+    echo "✅ MariaDB готова"
+}
 
   # DB
   mysql <<EOF
