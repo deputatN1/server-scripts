@@ -6,8 +6,7 @@
 ## Використання
 
 ```bash
-git clone https://github.com/deputatN1/server-scripts.git /opt/opencart
-cd /opt/opencart
+sudo git clone https://github.com/deputatN1/server-scripts.git /opt/opencart
 chmod +x /opt/opencart/deploy.sh
 cd /opt/opencart
 sudo bash deploy.sh
