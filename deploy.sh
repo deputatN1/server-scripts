@@ -68,6 +68,16 @@ ensure_mariadb
 ensure_nginx
 
 add_store() {
+	
+	[ -d "$SKELETON_DIR" ] || {
+  echo "Skeleton not found: $SKELETON_DIR"
+  exit 1
+}
+[ -S /run/php/php8.3-fpm.sock ] || {
+  echo "PHP-FPM socket not found"
+  exit 1
+}
+
   read -p "Domain: " DOMAIN
   read -p "Mode (demo/prod): " MODE
   #заміняємо дефіси та крапки в іменах баз даних
@@ -144,6 +154,40 @@ chown -R www-data:www-data "$ROOT"
 find "$ROOT" -type d -exec chmod 755 {} \;
 find "$ROOT" -type f -exec chmod 644 {} \;
 
+# --- OpenCart 4 CLI install ---
+
+ADMIN_PASS=$(openssl rand -base64 12)
+
+# прапорець demo (якщо режим demo)
+[ "$MODE" = "demo" ] && DEMO_FLAG="--demo-data" || DEMO_FLAG=""
+
+php "$ROOT/install/cli_install.php" install \
+  --db-host=localhost \
+  --db-user="$DB_USER" \
+  --db-pass="$DB_PASS" \
+  --db-name="$DB_NAME" \
+  --db-port=3306 \
+  --username=admin \
+  --password="$ADMIN_PASS" \
+  --email="admin@$DOMAIN" \
+  --firstname=Admin \
+  --lastname=User \
+  --http-server="https://$DOMAIN/" \
+  $DEMO_FLAG
+  
+# Попередня Перевірка успішності встановлення
+php "$ROOT/install/cli_install.php" install ... || {
+  echo "OpenCart install failed"
+  exit 1
+}
+
+
+# після інсталяції install обовʼязково видаляємо
+rm -rf "$ROOT/install"
+
+# зберігаємо admin пароль
+echo "$DOMAIN | opencart | admin | $ADMIN_PASS" >> "$BASE_DIR/data/credentials.log"
+chmod 600 "$BASE_DIR/data/credentials.log"
 
   # DB
   mysql <<EOF
@@ -181,12 +225,24 @@ EOF
   sed "s/{{DOMAIN}}/$DOMAIN/g" "$TEMPLATE" > "$NGINX_AVAIL/$DOMAIN"
   ln -s "$NGINX_AVAIL/$DOMAIN" "$NGINX_ENABLED/$DOMAIN"
 
-  nginx -t && systemctl reload nginx
+  if nginx -t; then
+    nginx -s reload
+    echo "✅ nginx успішно перезавантажено"
+else
+    echo "❌ Помилка в конфігурації nginx"
+fi
+
 
   echo "✔ Store added: $DOMAIN"
 }
 
 remove_store() {
+	
+	[ -z "$1" ] && {
+  echo "Domain required! Потрібен домен!"
+  exit 1
+}
+
   DOMAIN="$1"
   source "$BASE_DIR/stores/$DOMAIN.env"
 
