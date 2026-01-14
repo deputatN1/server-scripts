@@ -5,6 +5,7 @@ BASE_DIR="/opt/opencart"
 WWW_DIR="/var/www"
 NGINX_AVAIL="/etc/nginx/sites-available"
 NGINX_ENABLED="/etc/nginx/sites-enabled"
+SKELETON_DIR="$BASE_DIR/skeleton/upload"
 
 usage() {
   echo "Usage:"
@@ -80,6 +81,69 @@ add_store() {
   ROOT="$WWW_DIR/$DOMAIN"
 
   mkdir -p "$ROOT" "$BASE_DIR/stores"
+  # Додатно для створення теки скелетону
+  if [ ! -d "$ROOT/admin" ]; then
+  cp -a "$SKELETON_DIR/." "$ROOT/"
+fi
+# Generate OpenCart config.php
+cat > "$ROOT/config.php" <<EOF
+<?php
+define('HTTP_SERVER', 'https://$DOMAIN/');
+define('HTTPS_SERVER', 'https://$DOMAIN/');
+
+define('DIR_APPLICATION', '$ROOT/catalog/');
+define('DIR_SYSTEM', '$ROOT/system/');
+define('DIR_IMAGE', '$ROOT/image/');
+define('DIR_STORAGE', '$ROOT/storage/');
+define('DIR_LANGUAGE', '$ROOT/catalog/language/');
+define('DIR_TEMPLATE', '$ROOT/catalog/view/theme/');
+define('DIR_CONFIG', '$ROOT/system/config/');
+define('DIR_CACHE', '$ROOT/system/storage/cache/');
+define('DIR_DOWNLOAD', '$ROOT/system/storage/download/');
+define('DIR_LOGS', '$ROOT/system/storage/logs/');
+define('DIR_MODIFICATION', '$ROOT/system/storage/modification/');
+define('DIR_UPLOAD', '$ROOT/system/storage/upload/');
+
+define('DB_DRIVER', 'mysqli');
+define('DB_HOSTNAME', 'localhost');
+define('DB_USERNAME', '$DB_USER');
+define('DB_PASSWORD', '$DB_PASS');
+define('DB_DATABASE', '$DB_NAME');
+define('DB_PORT', '3306');
+define('DB_PREFIX', 'oc_');
+EOF
+
+# Generate admin config.php
+cat > "$ROOT/admin/config.php" <<EOF
+<?php
+define('HTTP_SERVER', 'https://$DOMAIN/admin/');
+define('HTTPS_SERVER', 'https://$DOMAIN/admin/');
+
+define('DIR_APPLICATION', '$ROOT/admin/');
+define('DIR_SYSTEM', '$ROOT/system/');
+define('DIR_IMAGE', '$ROOT/image/');
+define('DIR_STORAGE', '$ROOT/storage/');
+define('DIR_LANGUAGE', '$ROOT/admin/language/');
+define('DIR_TEMPLATE', '$ROOT/admin/view/template/');
+define('DIR_CATALOG', '$ROOT/catalog/');
+define('DIR_LOGS', '$ROOT/system/storage/logs/');
+define('DIR_MODIFICATION', '$ROOT/system/storage/modification/');
+define('DIR_UPLOAD', '$ROOT/system/storage/upload/');
+
+define('DB_DRIVER', 'mysqli');
+define('DB_HOSTNAME', 'localhost');
+define('DB_USERNAME', '$DB_USER');
+define('DB_PASSWORD', '$DB_PASS');
+define('DB_DATABASE', '$DB_NAME');
+define('DB_PORT', '3306');
+define('DB_PREFIX', 'oc_');
+EOF
+# Permissions
+mkdir -p "$ROOT/storage"
+chown -R www-data:www-data "$ROOT"
+find "$ROOT" -type d -exec chmod 755 {} \;
+find "$ROOT" -type f -exec chmod 644 {} \;
+
 
   # DB
   mysql <<EOF
