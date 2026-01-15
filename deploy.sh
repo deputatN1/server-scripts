@@ -67,7 +67,7 @@ ensure_service() {
 # -----------------------------
 
 add_store() {
-echo "Розпочинаємо додавати магазин у менеджер магазинів"
+echo "Розпочинаємо з перевірки компонентів"
 
 # -----------------------------
 # NGINX
@@ -148,11 +148,7 @@ echo "Перевірка наявності сокету"
 
   mkdir -p "$ROOT" "$BASE_DIR/stores"
   echo "Створили теку: " $ROOT ","$BASE_DIR/stores
-  # Якщо в каталозі магазину ще НЕ існує папка admin,
-  # то скопіювати туди весь OpenCart зі skeleton.
-  if [ ! -d "$ROOT/admin" ]; then
-  cp -a "$SKELETON_DIR/." "$ROOT/"
-fi
+  
 
 # Generate OpenCart config.php
 cat > "$ROOT/config.php" <<EOF
@@ -214,6 +210,10 @@ mkdir -p "$ROOT/storage"
 chown -R www-data:www-data "$ROOT"
 find "$ROOT" -type d -exec chmod 755 {} \;
 find "$ROOT" -type f -exec chmod 644 {} \;
+# Якщо в каталозі магазину ще НЕ існує папка admin,
+  # то скопіювати туди весь OpenCart зі skeleton.
+  if [ ! -d "$ROOT/admin" ]; then
+  cp -a "$SKELETON_DIR/." "$ROOT/"
 
 # --- OpenCart 4 CLI install ---
 
@@ -237,7 +237,7 @@ php "$ROOT/install/cli_install.php" install \
   --http-server="https://$DOMAIN/" \
   $DEMO_FLAG
   
-
+fi
 
 # зберігаємо admin пароль
 echo "$DOMAIN | opencart | admin | $ADMIN_PASS" >> "$BASE_DIR/data/credentials.log"
