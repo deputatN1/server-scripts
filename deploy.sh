@@ -239,8 +239,11 @@ php "$ROOT/install/cli_install.php" install \
   --firstname=Admin \
   --lastname=User \
   --http-server="https://$DOMAIN/" \
-  $DEMO_FLAG
-  
+  $DEMO_FLAG || {
+      echo "OpenCart install failed"
+      exit 1
+    }
+echo "cli_install.php Завершено, створюємо базу даних..."
 fi
 
   # DB
