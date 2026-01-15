@@ -63,6 +63,13 @@ ensure_service() {
 }
 
 # -----------------------------
+# --add Додавання магазину
+# -----------------------------
+
+add_store() {
+echo "Розпочинаємо додавати магазин у менеджер магазинів"
+
+# -----------------------------
 # NGINX
 # -----------------------------
 
@@ -104,7 +111,7 @@ ensure_service php${PHP_VER}-fpm
 # -----------------------------
 
 echo
-echo "=== Перевірка ==="
+echo "=== Перевірка версій програм==="
 
 nginx -v
 php -v | head -n1
@@ -112,12 +119,7 @@ mysql --version
 
 echo
 echo "✅ Nginx + MariaDB + PHP ${PHP_VER} готові до роботи"
-# -----------------------------
-# --add Додавання магазину
-# -----------------------------
-
-add_store() {
-echo "Розпочинаємо додавати магазин у менеджер магазинів"
+echo
 echo "Перевірка наявності скелетону"	
 	[ -d "$SKELETON_DIR" ] || {
   echo "Skeleton not found: $SKELETON_DIR"
@@ -141,10 +143,11 @@ echo "Перевірка наявності сокету"
   # DB_NAME="oc_${DOMAIN//./_}"
   # DB_USER="$DB_NAME"
   DB_PASS=$(openssl rand -base64 16)
+  echo "Пароль DB: "$DB_PASS
   ROOT="$WWW_DIR/$DOMAIN"
 
   mkdir -p "$ROOT" "$BASE_DIR/stores"
-  
+  echo "Створили теку: " $ROOT ","$BASE_DIR/stores
   # Якщо в каталозі магазину ще НЕ існує папка admin,
   # то скопіювати туди весь OpenCart зі skeleton.
   if [ ! -d "$ROOT/admin" ]; then
@@ -178,7 +181,7 @@ define('DB_DATABASE', '$DB_NAME');
 define('DB_PORT', '3306');
 define('DB_PREFIX', 'oc_');
 EOF
-
+  echo "Створили config.php 184 "
 # Generate admin config.php
 cat > "$ROOT/admin/config.php" <<EOF
 <?php
@@ -204,6 +207,7 @@ define('DB_DATABASE', '$DB_NAME');
 define('DB_PORT', '3306');
 define('DB_PREFIX', 'oc_');
 EOF
+echo "Створили admin/config.php 210 "
 
 # Permissions
 mkdir -p "$ROOT/storage"
@@ -214,6 +218,7 @@ find "$ROOT" -type f -exec chmod 644 {} \;
 # --- OpenCart 4 CLI install ---
 
 ADMIN_PASS=$(openssl rand -base64 12)
+echo "Пароль адміна: "$ADMIN_PASS
 
 # прапорець demo (якщо режим demo)
 [ "$MODE" = "demo" ] && DEMO_FLAG="--demo-data" || DEMO_FLAG=""
@@ -232,15 +237,7 @@ php "$ROOT/install/cli_install.php" install \
   --http-server="https://$DOMAIN/" \
   $DEMO_FLAG
   
-# Попередня Перевірка успішності встановлення
-php "$ROOT/install/cli_install.php" install ... || {
-  echo "OpenCart install failed"
-  exit 1
-}
 
-
-# після інсталяції install обовʼязково видаляємо
-rm -rf "$ROOT/install"
 
 # зберігаємо admin пароль
 echo "$DOMAIN | opencart | admin | $ADMIN_PASS" >> "$BASE_DIR/data/credentials.log"
@@ -290,7 +287,17 @@ else
     echo "❌ Помилка в конфігурації nginx"
 fi
 
+# Попередня Перевірка успішності встановлення
+echo "Перевірка успішності встановлення"
+php "$ROOT/install/cli_install.php" install ... || {
+  echo "OpenCart install failed"
+  exit 1
+}
 
+
+# після інсталяції install обовʼязково видаляємо
+echo "Видаляємо $ROOT/install !!!"
+rm -rf "$ROOT/install"
   echo "✔ Store added: $DOMAIN"
   
   #---Кінець блоку додавання магазину!---
