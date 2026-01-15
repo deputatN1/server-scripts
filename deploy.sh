@@ -6,6 +6,7 @@ WWW_DIR="/var/www"
 NGINX_AVAIL="/etc/nginx/sites-available"
 NGINX_ENABLED="/etc/nginx/sites-enabled"
 SKELETON_DIR="$BASE_DIR/skeleton/upload"
+PHP_VER="8.3"
 
 usage() {
   echo "Usage:"
@@ -23,49 +24,95 @@ ensure_root() {
  exit 1
  fi
 }
-ensure_mariadb() {
-    if ! command -v mysql >/dev/null 2>&1; then
-        echo "⚠️  mysql client не знайдено"
-        echo "➡️  Встановлюю MariaDB..."
 
-        apt update
-        apt install -y mariadb-server mariadb-client
-    fi
-
-    if ! systemctl is-active --quiet mariadb; then
-        echo "⚠️  MariaDB не запущена"
-        echo "➡️  Запускаю mariadb..."
-
-        systemctl start mariadb
-        systemctl enable mariadb
-    fi
-
-    echo "✅ MariaDB готова"
-}
-ensure_nginx() {
-    if ! command -v nginx >/dev/null 2>&1; then
-        echo "⚠️  nginx не знайдено"
-        echo "➡️  Встановлюю nginx..."
-
-        apt update
-        apt install -y nginx
-    fi
-
-    if ! systemctl is-active --quiet nginx; then
-        echo "⚠️  nginx не запущений"
-        echo "➡️  Запускаю nginx..."
-
-        systemctl start nginx
-        systemctl enable nginx
-    fi
-
-    echo "✅ nginx готовий"
-}
-
-  # Виклик функцій перевірки готовності системи до створення бази даних
 ensure_root
-ensure_mariadb
-ensure_nginx
+
+# -----------------------------
+# Утилітарні функції
+# -----------------------------
+
+ensure_packages() {
+    local packages=("$@")
+    local missing=()
+
+    for pkg in "${packages[@]}"; do
+        if ! dpkg -s "$pkg" >/dev/null 2>&1; then
+            missing+=("$pkg")
+        fi
+    done
+
+    if [ "${#missing[@]}" -gt 0 ]; then
+        echo "➡️  Встановлюю пакети:"
+        printf '  - %s\n' "${missing[@]}"
+        apt update
+        apt install -y "${missing[@]}"
+    else
+        echo "✅ Усі пакети вже встановлені"
+    fi
+}
+
+ensure_service() {
+    local service="$1"
+
+    if ! systemctl is-active --quiet "$service"; then
+        echo "➡️  Запускаю $service"
+        systemctl start "$service"
+    fi
+
+    systemctl enable "$service" >/dev/null 2>&1
+}
+
+# -----------------------------
+# NGINX
+# -----------------------------
+
+echo "=== NGINX ==="
+ensure_packages nginx
+ensure_service nginx
+
+# -----------------------------
+# MARIADB
+# -----------------------------
+
+echo "=== MariaDB ==="
+ensure_packages mariadb-server mariadb-client
+ensure_service mariadb
+
+# -----------------------------
+# PHP
+# -----------------------------
+
+echo "=== PHP ${PHP_VER} ==="
+
+PHP_PACKAGES=(
+    php${PHP_VER}-fpm
+    php${PHP_VER}-mysql
+    php${PHP_VER}-curl
+    php${PHP_VER}-gd
+    php${PHP_VER}-intl
+    php${PHP_VER}-mbstring
+    php${PHP_VER}-xml
+    php${PHP_VER}-zip
+    php${PHP_VER}-soap
+)
+
+ensure_packages "${PHP_PACKAGES[@]}"
+ensure_service php${PHP_VER}-fpm
+
+# -----------------------------
+# Перевірки
+# -----------------------------
+
+echo
+echo "=== Перевірка ==="
+
+nginx -v
+php -v | head -n1
+mysql --version
+
+echo
+echo "✅ Nginx + MariaDB + PHP ${PHP_VER} готові до роботи"
+
 
 add_store() {
 	
@@ -95,6 +142,7 @@ add_store() {
   if [ ! -d "$ROOT/admin" ]; then
   cp -a "$SKELETON_DIR/." "$ROOT/"
 fi
+
 # Generate OpenCart config.php
 cat > "$ROOT/config.php" <<EOF
 <?php
@@ -148,6 +196,7 @@ define('DB_DATABASE', '$DB_NAME');
 define('DB_PORT', '3306');
 define('DB_PREFIX', 'oc_');
 EOF
+
 # Permissions
 mkdir -p "$ROOT/storage"
 chown -R www-data:www-data "$ROOT"
