@@ -228,19 +228,19 @@ echo "Пароль адміна: "$ADMIN_PASS
 [ "$MODE" = "demo" ] && DEMO_FLAG="--demo-data" || DEMO_FLAG=""
 
 php "$ROOT/install/cli_install.php" install \
-  --email="admin@$DOMAIN" \
-  --password="$ADMIN_PASS" \
-  --http_server="https://$DOMAIN/" \
-  --db_username="$DB_USER" \
-  --db_database="$DB_NAME" \  
-#  --db-host=localhost \
-#  --db-user="$DB_USER" \
-#  --db-pass="$DB_PASS" \
-#  --db-name="$DB_NAME" \
-#  --db-port=3306 \
-#  --username=admin \
-#  --password="$ADMIN_PASS" \
-#  --email="admin@$DOMAIN" \
+  --username admin \
+  --email "admin@$DOMAIN" \
+  --password "$ADMIN_PASS" \
+  --http_server "https://$DOMAIN/" \
+  --db_username "$DB_USER" \
+  --db_database "$DB_NAME" \  
+  --language en-gb \
+  --db_driver mysqli \
+  --db_host localhost \
+  --db_password "$DB_PASS" \
+  --db_port 3306 \
+  --db_prefix oc_
+
 #  --firstname=Admin \
 #  --lastname=User \
 #  --http-server="https://$DOMAIN/" \
