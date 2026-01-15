@@ -234,7 +234,7 @@ php "$ROOT/install/cli_install.php" install \
   --http_server "https://$DOMAIN/" \
   --db_username "$DB_USER" \
   --db_database "$DB_NAME" \  
-  --language en-gb \
+# --language en-gb \
   --db_driver mysqli \
   --db_host localhost \
   --db_password "$DB_PASS" \
