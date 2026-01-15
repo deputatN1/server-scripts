@@ -243,10 +243,6 @@ php "$ROOT/install/cli_install.php" install \
   
 fi
 
-# зберігаємо admin пароль
-echo "$DOMAIN | opencart | admin | $ADMIN_PASS" >> "$BASE_DIR/data/credentials.log"
-chmod 600 "$BASE_DIR/data/credentials.log"
-
   # DB
   mysql <<EOF
 CREATE DATABASE $DB_NAME;
@@ -272,7 +268,8 @@ EOF
     HTP="/etc/nginx/.htpasswd_$DOMAIN"
 
     printf "%s:%s\n" "$AUTH_USER" "$(openssl passwd -apr1 $AUTH_PASS)" > "$HTP"
-
+  
+  # зберігаємо admin пароль
     mkdir -p "$BASE_DIR/data"
     echo "$DOMAIN | admin | $AUTH_USER | $AUTH_PASS" >> "$BASE_DIR/data/credentials.log"
     chmod 600 "$BASE_DIR/data/credentials.log"
