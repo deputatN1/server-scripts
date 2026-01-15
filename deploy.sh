@@ -228,22 +228,27 @@ echo "Пароль адміна: "$ADMIN_PASS
 [ "$MODE" = "demo" ] && DEMO_FLAG="--demo-data" || DEMO_FLAG=""
 
 php "$ROOT/install/cli_install.php" install \
-  --db-host=localhost \
-  --db-user="$DB_USER" \
-  --db-pass="$DB_PASS" \
-  --db-name="$DB_NAME" \
-  --db-port=3306 \
-  --username=admin \
-  --password="$ADMIN_PASS" \
   --email="admin@$DOMAIN" \
-  --firstname=Admin \
-  --lastname=User \
-  --http-server="https://$DOMAIN/" \
+  --password="$ADMIN_PASS" \
+  --http_server="https://$DOMAIN/" \
+  --db_username="$DB_USER" \
+  --db_database="$DB_NAME" \  
+#  --db-host=localhost \
+#  --db-user="$DB_USER" \
+#  --db-pass="$DB_PASS" \
+#  --db-name="$DB_NAME" \
+#  --db-port=3306 \
+#  --username=admin \
+#  --password="$ADMIN_PASS" \
+#  --email="admin@$DOMAIN" \
+#  --firstname=Admin \
+#  --lastname=User \
+#  --http-server="https://$DOMAIN/" \
   $DEMO_FLAG || {
       echo "OpenCart install failed"
       exit 1
     }
-echo "cli_install.php Завершено, створюємо базу даних..."
+echo "cli_install.php Завершено, створюємо базу даних...sudo"
 fi
 
   # DB
