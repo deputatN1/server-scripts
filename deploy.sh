@@ -177,8 +177,22 @@ define('DB_DATABASE', '$DB_NAME');
 define('DB_PORT', '3306');
 define('DB_PREFIX', 'oc_');
 EOF
-  echo "Створили config.php 184 "
-# Generate admin config.php
+  echo "Створили config.php 180 "
+  
+
+
+# Permissions
+mkdir -p "$ROOT/storage"
+chown -R www-data:www-data "$ROOT"
+find "$ROOT" -type d -exec chmod 755 {} \;
+find "$ROOT" -type f -exec chmod 644 {} \;
+
+# Якщо в каталозі магазину ще НЕ існує папка admin,
+  # то скопіювати туди весь OpenCart зі skeleton.
+  if [ ! -d "$ROOT/admin" ]; then
+  cp -a "$SKELETON_DIR/." "$ROOT/"
+  
+  # Generate admin config.php
 cat > "$ROOT/admin/config.php" <<EOF
 <?php
 define('HTTP_SERVER', 'https://$DOMAIN/admin/');
@@ -203,17 +217,7 @@ define('DB_DATABASE', '$DB_NAME');
 define('DB_PORT', '3306');
 define('DB_PREFIX', 'oc_');
 EOF
-echo "Створили admin/config.php 210 "
-
-# Permissions
-mkdir -p "$ROOT/storage"
-chown -R www-data:www-data "$ROOT"
-find "$ROOT" -type d -exec chmod 755 {} \;
-find "$ROOT" -type f -exec chmod 644 {} \;
-# Якщо в каталозі магазину ще НЕ існує папка admin,
-  # то скопіювати туди весь OpenCart зі skeleton.
-  if [ ! -d "$ROOT/admin" ]; then
-  cp -a "$SKELETON_DIR/." "$ROOT/"
+echo "Створили admin/config.php "
 
 # --- OpenCart 4 CLI install ---
 
