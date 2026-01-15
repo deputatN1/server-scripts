@@ -112,14 +112,18 @@ mysql --version
 
 echo
 echo "✅ Nginx + MariaDB + PHP ${PHP_VER} готові до роботи"
-
+# -----------------------------
+# --add Додавання магазину
+# -----------------------------
 
 add_store() {
-	
+echo "Розпочинаємо додавати магазин у менеджер магазинів"
+echo "Перевірка наявності скелетону"	
 	[ -d "$SKELETON_DIR" ] || {
   echo "Skeleton not found: $SKELETON_DIR"
   exit 1
 }
+echo "Перевірка наявності сокету"
 [ -S /run/php/php8.3-fpm.sock ] || {
   echo "PHP-FPM socket not found"
   exit 1
@@ -127,7 +131,9 @@ add_store() {
 
   read -p "Domain: " DOMAIN
   read -p "Mode (demo/prod): " MODE
+  
   #заміняємо дефіси та крапки в іменах баз даних
+  echo "Заміняємо дефіси та крипки в іменах"
   SAFE_NAME=$(echo "$DOMAIN" | tr '.-' '_' )
   DB_NAME="oc_${SAFE_NAME}"
   DB_USER="oc_${SAFE_NAME}"
@@ -138,7 +144,9 @@ add_store() {
   ROOT="$WWW_DIR/$DOMAIN"
 
   mkdir -p "$ROOT" "$BASE_DIR/stores"
-  # Додатно для створення теки скелетону
+  
+  # Якщо в каталозі магазину ще НЕ існує папка admin,
+  # то скопіювати туди весь OpenCart зі skeleton.
   if [ ! -d "$ROOT/admin" ]; then
   cp -a "$SKELETON_DIR/." "$ROOT/"
 fi
@@ -273,7 +281,8 @@ EOF
   TEMPLATE="$BASE_DIR/templates/nginx.$MODE.tpl"
   sed "s/{{DOMAIN}}/$DOMAIN/g" "$TEMPLATE" > "$NGINX_AVAIL/$DOMAIN"
   ln -s "$NGINX_AVAIL/$DOMAIN" "$NGINX_ENABLED/$DOMAIN"
-
+  
+  #---ПЕревірка конфігурації та її перезавантаження---
   if nginx -t; then
     nginx -s reload
     echo "✅ nginx успішно перезавантажено"
@@ -283,12 +292,14 @@ fi
 
 
   echo "✔ Store added: $DOMAIN"
+  
+  #---Кінець блоку додавання магазину!---
 }
 
 remove_store() {
 	
 	[ -z "$1" ] && {
-  echo "Domain required! Потрібен домен!"
+  echo "Domain required! Потрібно вказати домен!"
   exit 1
 }
 
@@ -341,8 +352,6 @@ reset_all_demo() {
     [ "$MODE" = "demo" ] && reset_demo "$DOMAIN"
   done
 }
-
-ensure_root
 
 case "$1" in
   --add) add_store ;;
