@@ -233,12 +233,10 @@ echo "Пароль адміна: "$ADMIN_PASS
 
 
 
-  $DEMO_FLAG || {
-      echo "OpenCart install failed"
-      exit 1
-    }
-echo "cli_install.php Завершено, створюємо базу даних...sudo"
-
+#  $DEMO_FLAG || {
+#      echo "OpenCart install failed"
+#      exit 1
+#    }
 
   # DB
   mysql <<EOF
@@ -291,6 +289,8 @@ EOF
 --db_database "$DB_NAME" \
 --db_port 3306 \
 --db_prefix oc_
+
+echo "cli_install.php Завершено???"
 
   #---ПЕревірка конфігурації та її перезавантаження---
   if nginx -t; then
