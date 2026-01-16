@@ -120,12 +120,14 @@ mysql --version
 echo
 echo "✅ Nginx + MariaDB + PHP ${PHP_VER} готові до роботи"
 echo
-echo "Перевірка наявності скелетону"
+echo "Перевірка скелетону"
+echo
 	[ -d "$SKELETON_DIR" ] || {
   echo "Skeleton not found: $SKELETON_DIR"
   exit 1
 }
-echo "Перевірка наявності сокету"
+echo "Перевірка сокету"
+echo
 [ -S /run/php/php8.3-fpm.sock ] || {
   echo "PHP-FPM socket not found"
   exit 1
@@ -135,7 +137,8 @@ echo "Перевірка наявності сокету"
   read -p "Mode (demo/prod): " MODE
 
   #заміняємо дефіси та крапки в іменах баз даних
-  echo "Заміняємо дефіси та крипки в іменах"
+  echo "Заміняємо дефіси та крипки..."
+  echo
   SAFE_NAME=$(echo "$DOMAIN" | tr '.-' '_' )
   DB_NAME="oc_${SAFE_NAME}"
   DB_USER="oc_${SAFE_NAME}"
@@ -144,11 +147,12 @@ echo "Перевірка наявності сокету"
   # DB_USER="$DB_NAME"
   DB_PASS=$(openssl rand -base64 16)
   echo "Пароль DB: "$DB_PASS
+  echo
   ROOT="$WWW_DIR/$DOMAIN"
 
   mkdir -p "$ROOT" "$BASE_DIR/stores"
   echo "Створили теку: " $ROOT ","$BASE_DIR/stores
-
+  echo
 
 # Generate OpenCart config.php
 cat > "$ROOT/config.php" <<EOF
@@ -177,7 +181,7 @@ define('DB_DATABASE', '$DB_NAME');
 define('DB_PORT', '3306');
 define('DB_PREFIX', 'oc_');
 EOF
-  echo "Створили config.php 180 "
+  echo "Створили config.php #FFFFFF"
 
 
 # Permissions
@@ -190,6 +194,7 @@ find "$ROOT" -type f -exec chmod 644 {} \;
   # то скопіювати туди весь OpenCart зі skeleton.
   if [ ! -d "$ROOT/admin" ]; then
   cp -a "$SKELETON_DIR/." "$ROOT/"
+fi
 
   # Generate admin config.php
 cat > "$ROOT/admin/config.php" <<EOF
@@ -218,7 +223,7 @@ define('DB_PREFIX', 'oc_');
 EOF
 echo "Створили admin/config.php "
 
-# --- OpenCart 4 CLI install ---
+
 
 ADMIN_PASS=$(openssl rand -base64 12)
 echo "Пароль адміна: "$ADMIN_PASS
@@ -226,29 +231,14 @@ echo "Пароль адміна: "$ADMIN_PASS
 # прапорець demo (якщо режим demo)
 [ "$MODE" = "demo" ] && DEMO_FLAG="--demo-data" || DEMO_FLAG=""
 
-php "$ROOT/install/cli_install.php" install \
-  --username admin \
-  --email "admin@$DOMAIN" \
-  --password "$ADMIN_PASS" \
-  --http_server "https://$DOMAIN/" \
-  --db_username "$DB_USER" \
-  --db_database "$DB_NAME" \
-# --language en-gb \
-  --db_driver mysqli \
-  --db_host localhost \
-  --db_password "$DB_PASS" \
-  --db_port 3306 \
-  --db_prefix oc_ \
 
-#  --firstname=Admin \
-#  --lastname=User \
-#  --http-server="https://$DOMAIN/" \
+
   $DEMO_FLAG || {
       echo "OpenCart install failed"
       exit 1
     }
 echo "cli_install.php Завершено, створюємо базу даних...sudo"
-fi
+
 
   # DB
   mysql <<EOF
@@ -286,6 +276,21 @@ EOF
   TEMPLATE="$BASE_DIR/templates/nginx.$MODE.tpl"
   sed "s/{{DOMAIN}}/$DOMAIN/g" "$TEMPLATE" > "$NGINX_AVAIL/$DOMAIN"
   ln -s "$NGINX_AVAIL/$DOMAIN" "$NGINX_ENABLED/$DOMAIN"
+  
+  # --- OpenCart 4 CLI install ---
+  php "$ROOT/install/cli_install.php" install \
+--username admin \
+--email "admin@$DOMAIN" \
+--password "$ADMIN_PASS" \
+--http_server "https://$DOMAIN/" \
+--language en-gb \
+--db_driver mysqli \
+--db_hostname localhost \
+--db_username "$DB_USER" \
+--db_password "$DB_PASS" \
+--db_database "$DB_NAME" \
+--db_port 3306 \
+--db_prefix oc_
 
   #---ПЕревірка конфігурації та її перезавантаження---
   if nginx -t; then
@@ -304,8 +309,8 @@ php "$ROOT/install/cli_install.php" install ... || {
 
 
 # після інсталяції install обовʼязково видаляємо
-echo "Видаляємо $ROOT/install !!!"
-rm -rf "$ROOT/install"
+echo "НЕВидаляємо $ROOT/install !!!"
+#rm -rf "$ROOT/install"
   echo "✔ Store added: $DOMAIN"
 
   #---Кінець блоку додавання магазину!---
