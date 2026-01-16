@@ -120,7 +120,7 @@ mysql --version
 echo
 echo "✅ Nginx + MariaDB + PHP ${PHP_VER} готові до роботи"
 echo
-echo "Перевірка наявності скелетону"	
+echo "Перевірка наявності скелетону"
 	[ -d "$SKELETON_DIR" ] || {
   echo "Skeleton not found: $SKELETON_DIR"
   exit 1
@@ -133,7 +133,7 @@ echo "Перевірка наявності сокету"
 
   read -p "Domain: " DOMAIN
   read -p "Mode (demo/prod): " MODE
-  
+
   #заміняємо дефіси та крапки в іменах баз даних
   echo "Заміняємо дефіси та крипки в іменах"
   SAFE_NAME=$(echo "$DOMAIN" | tr '.-' '_' )
@@ -148,7 +148,7 @@ echo "Перевірка наявності сокету"
 
   mkdir -p "$ROOT" "$BASE_DIR/stores"
   echo "Створили теку: " $ROOT ","$BASE_DIR/stores
-  
+
 
 # Generate OpenCart config.php
 cat > "$ROOT/config.php" <<EOF
@@ -178,7 +178,6 @@ define('DB_PORT', '3306');
 define('DB_PREFIX', 'oc_');
 EOF
   echo "Створили config.php 180 "
-  
 
 
 # Permissions
@@ -191,7 +190,7 @@ find "$ROOT" -type f -exec chmod 644 {} \;
   # то скопіювати туди весь OpenCart зі skeleton.
   if [ ! -d "$ROOT/admin" ]; then
   cp -a "$SKELETON_DIR/." "$ROOT/"
-  
+
   # Generate admin config.php
 cat > "$ROOT/admin/config.php" <<EOF
 <?php
@@ -233,13 +232,13 @@ php "$ROOT/install/cli_install.php" install \
   --password "$ADMIN_PASS" \
   --http_server "https://$DOMAIN/" \
   --db_username "$DB_USER" \
-  --db_database "$DB_NAME" \  
+  --db_database "$DB_NAME" \
 # --language en-gb \
   --db_driver mysqli \
   --db_host localhost \
   --db_password "$DB_PASS" \
   --db_port 3306 \
-  --db_prefix oc_
+  --db_prefix oc_ \
 
 #  --firstname=Admin \
 #  --lastname=User \
@@ -276,7 +275,7 @@ EOF
     HTP="/etc/nginx/.htpasswd_$DOMAIN"
 
     printf "%s:%s\n" "$AUTH_USER" "$(openssl passwd -apr1 $AUTH_PASS)" > "$HTP"
-  
+
   # зберігаємо admin пароль
     mkdir -p "$BASE_DIR/data"
     echo "$DOMAIN | admin | $AUTH_USER | $AUTH_PASS" >> "$BASE_DIR/data/credentials.log"
@@ -287,7 +286,7 @@ EOF
   TEMPLATE="$BASE_DIR/templates/nginx.$MODE.tpl"
   sed "s/{{DOMAIN}}/$DOMAIN/g" "$TEMPLATE" > "$NGINX_AVAIL/$DOMAIN"
   ln -s "$NGINX_AVAIL/$DOMAIN" "$NGINX_ENABLED/$DOMAIN"
-  
+
   #---ПЕревірка конфігурації та її перезавантаження---
   if nginx -t; then
     nginx -s reload
@@ -308,12 +307,12 @@ php "$ROOT/install/cli_install.php" install ... || {
 echo "Видаляємо $ROOT/install !!!"
 rm -rf "$ROOT/install"
   echo "✔ Store added: $DOMAIN"
-  
+
   #---Кінець блоку додавання магазину!---
 }
 
 remove_store() {
-	
+
 	[ -z "$1" ] && {
   echo "Domain required! Потрібно вказати домен!"
   exit 1
