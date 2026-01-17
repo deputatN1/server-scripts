@@ -1,7 +1,14 @@
 server {
+  listen 80;
   server_name {{DOMAIN}};
+  
   root /var/www/{{DOMAIN}};
-
+  index index.php index.html;
+  
+  location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+  
   location /admin {
     auth_basic "Demo Admin";
     auth_basic_user_file /etc/nginx/.htpasswd_{{DOMAIN}};

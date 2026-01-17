@@ -1,9 +1,10 @@
 server {
+	listen 80;
     server_name {{DOMAIN}};
+    
     root /var/www/{{DOMAIN}};
-
     index index.php index.html;
-
+    
     location / {
         try_files $uri $uri/ /index.php?$query_string;
     }
