@@ -282,7 +282,7 @@ EOF
 --email "admin@$DOMAIN" \
 --password "$ADMIN_PASS" \
 --http_server "https://$DOMAIN/" \
---language en-gb \
+--language uk-ua \
 --db_driver mysqli \
 --db_hostname localhost \
 --db_username "$DB_USER" \
