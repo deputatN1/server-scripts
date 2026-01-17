@@ -183,18 +183,19 @@ define('DB_PREFIX', 'oc_');
 EOF
   echo "Створили config.php #FFFFFF"
 
-
-# Permissions
-mkdir -p "$ROOT/storage"
-chown -R www-data:www-data "$ROOT"
-find "$ROOT" -type d -exec chmod 755 {} \;
-find "$ROOT" -type f -exec chmod 644 {} \;
+# Permissions -перенесено нижче
 
 # Якщо в каталозі магазину ще НЕ існує папка admin,
   # то скопіювати туди весь OpenCart зі skeleton.
   if [ ! -d "$ROOT/admin" ]; then
   cp -a "$SKELETON_DIR/." "$ROOT/"
 fi
+
+# Permissions
+mkdir -p "$ROOT/storage"
+chown -R www-data:www-data "$ROOT"
+find "$ROOT" -type d -exec chmod 755 {} \;
+find "$ROOT" -type f -exec chmod 644 {} \;
 
   # Generate admin config.php
 cat > "$ROOT/admin/config.php" <<EOF
