@@ -276,7 +276,7 @@ EOF
   ln -s "$NGINX_AVAIL/$DOMAIN" "$NGINX_ENABLED/$DOMAIN"
   
   # --- OpenCart 4 CLI install ---
-  php "$ROOT/install/cli_install.php" install --username admin --email "admin@$DOMAIN" --password "$ADMIN_PASS" --http_server "https://$DOMAIN/" --language uk-ua --db_driver mysqli --db_hostname localhost --db_username "$DB_USER" --db_password "$DB_PASS" --db_database "$DB_NAME" --db_port 3306 --db_prefix oc_
+  php "$ROOT/install/cli_install.php" install --username admin --email "admin@$DOMAIN" --password "$ADMIN_PASS" --http_server "https://$DOMAIN/" --language en-gb --db_driver mysqli --db_hostname localhost --db_username "$DB_USER" --db_password "$DB_PASS" --db_database "$DB_NAME" --db_port 3306 --db_prefix oc_
 
 #
 #
@@ -303,10 +303,10 @@ echo "Українська за замовчуванням виставлена"
 
 
 # Копіювання категорій
-#  не перевірялось із скрипта
+
 echo "=== Копіюємо категорії для іншої мови ==="
 
-mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" <<EOF
+mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" <<SQL
 INSERT INTO oc_category_description
 (category_id, language_id, name, description, meta_title, meta_description, meta_keyword)
 SELECT
@@ -329,9 +329,8 @@ else
 fi
 
 
-#
+
 #---Клонування демо - контенту
-#-----------------------------------------
 clone_demo_content() {
   local SRC_LANG_ID="$1"
   local DST_LANG_ID="$2"
@@ -438,6 +437,7 @@ AND banner_image_id NOT IN (
 EOF
 
   echo "✔ Demo-контент успішно клоновано"
+}
 
 
 
