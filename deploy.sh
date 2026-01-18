@@ -276,20 +276,15 @@ EOF
   ln -s "$NGINX_AVAIL/$DOMAIN" "$NGINX_ENABLED/$DOMAIN"
   
   # --- OpenCart 4 CLI install ---
-  php "$ROOT/install/cli_install.php" install \
---username admin \
---email "admin@$DOMAIN" \
---password "$ADMIN_PASS" \
---http_server "https://$DOMAIN/" \
---language uk-ua \
---db_driver mysqli \
---db_hostname localhost \
---db_username "$DB_USER" \
---db_password "$DB_PASS" \
---db_database "$DB_NAME" \
---db_port 3306 \
---db_prefix oc_
+  php "$ROOT/install/cli_install.php" install --username admin --email "admin@$DOMAIN" --password "$ADMIN_PASS" --http_server "https://$DOMAIN/" --language uk-ua --db_driver mysqli --db_hostname localhost --db_username "$DB_USER" --db_password "$DB_PASS" --db_database "$DB_NAME" --db_port 3306 --db_prefix oc_
 
+#
+#
+#
+#
+#
+#
+#
 echo "cli_install.php Завершено???"
 
 mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" <<EOF
