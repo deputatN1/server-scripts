@@ -302,31 +302,30 @@ EOF
 echo "Українська за замовчуванням виставлена"
 
 
-# Копіювання категорій
+SRC_LANG_ID=1
+NEW_LANG_ID=2
+DB_PREFIX="oc_"
 
-echo "=== Копіюємо категорії для іншої мови ==="
+echo "▶ Клонуємо переклади (oc_translation)"
 
-mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" <<SQL
-INSERT INTO oc_category_description
-(category_id, language_id, name, description, meta_title, meta_description, meta_keyword)
+mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" <<'SQL'
+INSERT INTO oc_translation
+(store_id, language_id, route, `key`, value)
 SELECT
-    category_id,
-    2,
-    name,
-    description,
-    meta_title,
-    meta_description,
-    meta_keyword
-FROM oc_category_description
-WHERE language_id = 1;
+  store_id,
+  2,
+  route,
+  `key`,
+  value
+FROM oc_translation
+WHERE language_id = 1
+AND (store_id, route, `key`) NOT IN (
+  SELECT store_id, route, `key`
+  FROM oc_translation
+  WHERE language_id = 2
+);
 SQL
 
-if [ $? -eq 0 ]; then
-    echo "✅ Категорії успішно скопійовані"
-else
-    echo "❌ Помилка при копіюванні категорій"
-    exit 1
-fi
 
 
 
