@@ -62,30 +62,29 @@ ensure_service() {
     systemctl enable "$service" >/dev/null 2>&1
 }
 
-# -----------------------------
 # --add Додавання магазину
 # -----------------------------
 
 add_store() {
 echo "Розпочинаємо з перевірки компонентів"
 
-# -----------------------------
-# NGINX
+
+# NGINX виклик функцій перевірки
 # -----------------------------
 
 echo "=== NGINX ==="
 ensure_packages nginx
 ensure_service nginx
 
-# -----------------------------
-# MARIADB
+
+# MARIADB виклик функцій перевірки
 # -----------------------------
 
 echo "=== MariaDB ==="
 ensure_packages mariadb-server mariadb-client
 ensure_service mariadb
 
-# -----------------------------
+
 # PHP
 # -----------------------------
 
@@ -106,7 +105,7 @@ PHP_PACKAGES=(
 ensure_packages "${PHP_PACKAGES[@]}"
 ensure_service php${PHP_VER}-fpm
 
-# -----------------------------
+
 # Перевірки
 # -----------------------------
 
@@ -444,14 +443,15 @@ AND banner_image_id NOT IN (
 EOF
 
   echo "✔ Demo-контент успішно клоновано"
-}
+
 
 
 rm -rf "$ROOT/system/storage/cache/"*
 rm -rf "$ROOT/system/storage/modification/"*
 echo "Кеш очищено."
 
-  #---ПЕревірка конфігурації та її перезавантаження---
+#---ПЕревірка конфігурації nginx та її перезавантаження---
+  
   if nginx -t; then
     nginx -s reload
     echo "✅ nginx успішно перезавантажено"
@@ -472,16 +472,17 @@ echo "НЕВидаляємо $ROOT/install !!!"
 #rm -rf "$ROOT/install"
   echo "✔ Store added: $DOMAIN"
 
-  #---Кінець блоку додавання магазину!---
+
 }
-
+}
+  #---Кінець блоку додавання магазину!---
+  
+  #--- Видалення магазину
 remove_store() {
-
 	[ -z "$1" ] && {
   echo "Domain required! Потрібно вказати домен!"
   exit 1
 }
-
   DOMAIN="$1"
   source "$BASE_DIR/stores/$DOMAIN.env"
 
