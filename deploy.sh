@@ -439,6 +439,10 @@ EOF
   echo "✔ Demo-контент успішно клоновано"
 }
 
+SRC_LANG_ID=1   # en-gb
+DST_LANG_ID=2   # uk-ua
+
+clone_demo_content "$SRC_LANG_ID" "$DST_LANG_ID"
 
 
 rm -rf "$ROOT/system/storage/cache/"*
