@@ -329,119 +329,126 @@ SQL
 
 
 
-#---Клонування демо - контенту
-clone_demo_content() {
-  local SRC_LANG_ID="$1"
-  local DST_LANG_ID="$2"
+#---Клонування демо контенту uk
+clone_language() {
+  echo "======================================"
+  echo "▶ Клонуємо demo-контент: language_id $SRC_LANG_ID → $NEW_LANG_ID"
+  echo "======================================"
 
-  echo "▶ Клонуємо demo-контент: language_id $SRC_LANG_ID → $DST_LANG_ID"
-
-  mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" <<EOF
-
--- Categories
-INSERT INTO oc_category_description
+  # 1️⃣ Категорії
+  echo "▶ Категорії"
+  mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" <<SQL
+INSERT INTO ${DB_PREFIX}category_description
 (category_id, language_id, name, description, meta_title, meta_description, meta_keyword)
 SELECT
-category_id,
-$DST_LANG_ID,
-name,
-description,
-meta_title,
-meta_description,
-meta_keyword
-FROM oc_category_description
+  category_id,
+  $NEW_LANG_ID,
+  name,
+  description,
+  meta_title,
+  meta_description,
+  meta_keyword
+FROM ${DB_PREFIX}category_description
 WHERE language_id = $SRC_LANG_ID
 AND category_id NOT IN (
-  SELECT category_id FROM oc_category_description WHERE language_id = $DST_LANG_ID
+  SELECT category_id FROM ${DB_PREFIX}category_description WHERE language_id = $NEW_LANG_ID
 );
+SQL
 
--- Products
-INSERT INTO oc_product_description
+  # 2️⃣ Товари
+  echo "▶ Товари"
+  mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" <<SQL
+INSERT INTO ${DB_PREFIX}product_description
 (product_id, language_id, name, description, tag, meta_title, meta_description, meta_keyword)
 SELECT
-product_id,
-$DST_LANG_ID,
-name,
-description,
-tag,
-meta_title,
-meta_description,
-meta_keyword
-FROM oc_product_description
+  product_id,
+  $NEW_LANG_ID,
+  name,
+  description,
+  tag,
+  meta_title,
+  meta_description,
+  meta_keyword
+FROM ${DB_PREFIX}product_description
 WHERE language_id = $SRC_LANG_ID
 AND product_id NOT IN (
-  SELECT product_id FROM oc_product_description WHERE language_id = $DST_LANG_ID
+  SELECT product_id FROM ${DB_PREFIX}product_description WHERE language_id = $NEW_LANG_ID
 );
+SQL
 
--- Information pages
-INSERT INTO oc_information_description
+  # 3️⃣ Інформаційні сторінки (About, Delivery, Privacy)
+  echo "▶ Інформаційні сторінки"
+  mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" <<SQL
+INSERT INTO ${DB_PREFIX}information_description
 (information_id, language_id, title, description, meta_title, meta_description, meta_keyword)
 SELECT
-information_id,
-$DST_LANG_ID,
-title,
-description,
-meta_title,
-meta_description,
-meta_keyword
-FROM oc_information_description
+  information_id,
+  $NEW_LANG_ID,
+  title,
+  description,
+  meta_title,
+  meta_description,
+  meta_keyword
+FROM ${DB_PREFIX}information_description
 WHERE language_id = $SRC_LANG_ID
 AND information_id NOT IN (
-  SELECT information_id FROM oc_information_description WHERE language_id = $DST_LANG_ID
+  SELECT information_id FROM ${DB_PREFIX}information_description WHERE language_id = $NEW_LANG_ID
 );
+SQL
 
--- Menu
-INSERT INTO oc_menu_description
-(menu_id, language_id, name)
+  # 4️⃣ Статуси замовлень
+  echo "▶ Статуси замовлень"
+  mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" <<SQL
+INSERT INTO ${DB_PREFIX}order_status
+(order_status_id, language_id, name)
 SELECT
-menu_id,
-$DST_LANG_ID,
-name
-FROM oc_menu_description
+  order_status_id,
+  $NEW_LANG_ID,
+  name
+FROM ${DB_PREFIX}order_status
 WHERE language_id = $SRC_LANG_ID
-AND menu_id NOT IN (
-  SELECT menu_id FROM oc_menu_description WHERE language_id = $DST_LANG_ID
+AND order_status_id NOT IN (
+  SELECT order_status_id FROM ${DB_PREFIX}order_status WHERE language_id = $NEW_LANG_ID
 );
+SQL
 
--- Manufacturers
-INSERT INTO oc_manufacturer_description
-(manufacturer_id, language_id, name, description, meta_title, meta_description, meta_keyword)
+  # 5️⃣ Наявність на складі
+  echo "▶ Статуси наявності"
+  mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" <<SQL
+INSERT INTO ${DB_PREFIX}stock_status
+(stock_status_id, language_id, name)
 SELECT
-manufacturer_id,
-$DST_LANG_ID,
-name,
-description,
-meta_title,
-meta_description,
-meta_keyword
-FROM oc_manufacturer_description
+  stock_status_id,
+  $NEW_LANG_ID,
+  name
+FROM ${DB_PREFIX}stock_status
 WHERE language_id = $SRC_LANG_ID
-AND manufacturer_id NOT IN (
-  SELECT manufacturer_id FROM oc_manufacturer_description WHERE language_id = $DST_LANG_ID
+AND stock_status_id NOT IN (
+  SELECT stock_status_id FROM ${DB_PREFIX}stock_status WHERE language_id = $NEW_LANG_ID
 );
+SQL
 
--- Banners
-INSERT INTO oc_banner_image_description
-(banner_image_id, language_id, title)
+  # 6️⃣ Теми (інколи використовуються)
+  echo "▶ Теми"
+  mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" <<SQL
+INSERT INTO ${DB_PREFIX}theme
+(theme_id, store_id, language_id, route, code)
 SELECT
-banner_image_id,
-$DST_LANG_ID,
-title
-FROM oc_banner_image_description
+  theme_id,
+  store_id,
+  $NEW_LANG_ID,
+  route,
+  code
+FROM ${DB_PREFIX}theme
 WHERE language_id = $SRC_LANG_ID
-AND banner_image_id NOT IN (
-  SELECT banner_image_id FROM oc_banner_image_description WHERE language_id = $DST_LANG_ID
+AND (theme_id, route) NOT IN (
+  SELECT theme_id, route FROM ${DB_PREFIX}theme WHERE language_id = $NEW_LANG_ID
 );
+SQL
 
-EOF
-
-  echo "✔ Demo-контент успішно клоновано"
+  echo "✅ Клонування demo-контенту завершено"
 }
 
-SRC_LANG_ID=1   # en-gb
-DST_LANG_ID=2   # uk-ua
-
-clone_demo_content "$SRC_LANG_ID" "$DST_LANG_ID"
 
 
 rm -rf "$ROOT/system/storage/cache/"*
